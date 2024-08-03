@@ -9,7 +9,7 @@ app = Flask(__name__)
 socketio = SocketIO(app)
 download_directory = '/home/media'  # Change this to your desired download directory
 
-musicbrainzngs.set_useragent("YourAppName", "1.0", "your-email@example.com")
+musicbrainzngs.set_useragent("YT-Downloader", "0.86", "matteo@tripalle.it")
 
 class MyLogger:
     def __init__(self):
@@ -97,4 +97,4 @@ def download():
     return jsonify({'status': 'success'})
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5500)
+    socketio.run(app, host='0.0.0.0', port=5500, debug=True)
