@@ -2,104 +2,89 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Download Music</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scarica tracce da YouTube!</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Helvetica:wght@400;700&display=swap">
     <style>
         body {
-            font-family: Helvetica, Arial, sans-serif;
-            background-color: #333;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            font-family: 'Helvetica', sans-serif;
+            background-color: #f0f0f0;
+            color: #ffffff;
+            text-align: center;
             margin: 0;
-            flex-direction: column;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #333333;
+            padding: 20px;
+            border-radius: 8px;
         }
         h1 {
-            margin-bottom: 20px;
+            color: #ffffff;
+            margin-bottom: 10px;
         }
-        form {
-            margin-bottom: 20px;
+        h2 {
+            color: #cccccc;
+            margin-top: 0;
         }
         input[type="text"] {
+            width: 80%;
             padding: 10px;
-            font-size: 16px;
-            border: none;
-            border-radius: 5px;
-            margin-right: 10px;
+            margin: 10px 0;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
         }
-        button {
+        input[type="submit"] {
             padding: 10px 20px;
-            font-size: 16px;
+            background-color: #007BFF;
+            color: #ffffff;
             border: none;
-            border-radius: 5px;
-            background-color: #4caf50;
-            color: white;
+            border-radius: 4px;
             cursor: pointer;
         }
-        button:hover {
-            background-color: #45a049;
+        input[type="submit"]:hover {
+            background-color: #0056b3;
         }
-        #progress-bar {
-            width: 100%;
-            max-width: 500px;
-            background-color: #ddd;
-            border-radius: 5px;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-        #progress {
-            height: 30px;
-            width: 0;
-            background-color: #4caf50;
-        }
-        #log {
-            width: 100%;
-            max-width: 500px;
-            background-color: #444;
+        .log {
+            background-color: #282828;
+            color: #ffffff;
             padding: 10px;
-            border-radius: 5px;
-            overflow-y: auto;
-            max-height: 150px;
+            margin-top: 20px;
+            border-radius: 4px;
+            text-align: left;
         }
     </style>
 </head>
 <body>
-    <h1>Download Music from YouTube</h1>
-    <form id="download-form">
-        <label for="url">YouTube URL:</label>
-        <input type="text" id="url" name="url" required>
-        <button type="submit">Download</button>
-    </form>
-    <div id="progress-bar">
-        <div id="progress"></div>
+    <div class="container">
+        <h1>Scarica Tracce da YouTube</h1>
+        <h2>La musica scaricata da qui apparirà entro 15 minuti in Tripallefy (Plexamp)</h2>
+        <form action="/download" method="POST">
+            <input type="text" name="url" placeholder="Incolla qui l'url della canzone" required>
+            <input type="submit" value="Scarica!">
+        </form>
+        <div class="log" id="log"></div>
     </div>
-    <div id="log"></div>
-
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <script>
-        const socket = io();
+        var socket = io();
 
-        $('#download-form').submit(function(e) {
-            e.preventDefault();
-            $.post('/download', $(this).serialize(), function(data) {
-                if (data.status === 'success') {
-                    console.log('Download started');
-                }
-            });
+        socket.on('log', function(msg) {
+            var log = document.getElementById('log');
+            log.innerHTML += '<p>' + msg + '</p>';
+            log.scrollTop = log.scrollHeight;
         });
 
         socket.on('progress', function(data) {
-            if (data.status === 'finished') {
-                $('#progress').css('width', '100%');
-            } else if (data.status === 'downloading') {
-                $('#progress').css('width', data.progress);
+            var log = document.getElementById('log');
+            if (data.status === 'downloading') {
+                log.innerHTML += '<p>Progress: ' + data.progress + '</p>';
+            } else if (data.status === 'finished') {
+                log.innerHTML += '<p>Download complete!</p>';
             }
-        });
-
-        socket.on('log', function(msg) {
-            $('#log').append(`<p>${msg}</p>`);
+            log.scrollTop = log.scrollHeight;
         });
     </script>
 </body>
