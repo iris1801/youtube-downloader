@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, render_template, jsonify
 from flask_socketio import SocketIO, emit
 import yt_dlp
 
@@ -47,11 +47,13 @@ def download_audio(url):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    if request.method == 'POST':
-        url = request.form['url']
-        download_audio(url)
-        return redirect(url_for('index'))
     return render_template('index.html')
+
+@app.route('/download', methods=['POST'])
+def download():
+    url = request.form['url']
+    download_audio(url)
+    return jsonify({'status': 'success'})
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5500)

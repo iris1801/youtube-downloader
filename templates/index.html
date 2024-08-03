@@ -8,7 +8,7 @@
 </head>
 <body>
     <h1>Download Music from YouTube</h1>
-    <form method="POST">
+    <form id="download-form">
         <label for="url">YouTube URL:</label>
         <input type="text" id="url" name="url" required>
         <button type="submit">Download</button>
@@ -20,6 +20,15 @@
 
     <script>
         const socket = io();
+
+        $('#download-form').submit(function(e) {
+            e.preventDefault();
+            $.post('/download', $(this).serialize(), function(data) {
+                if (data.status === 'success') {
+                    console.log('Download started');
+                }
+            });
+        });
 
         socket.on('progress', function(data) {
             if (data.status === 'finished') {
