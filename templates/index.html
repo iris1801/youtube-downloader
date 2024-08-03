@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Download Music</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Download Music from YouTube</h1>
+    <form method="POST">
+        <label for="url">YouTube URL:</label>
+        <input type="text" id="url" name="url" required>
+        <button type="submit">Download</button>
+    </form>
+    <div id="progress-bar" style="width: 100%; background-color: #ddd;">
+        <div id="progress" style="width: 0%; height: 30px; background-color: #4caf50;"></div>
+    </div>
+    <div id="log"></div>
+
+    <script>
+        const socket = io();
+
+        socket.on('progress', function(data) {
+            if (data.status === 'finished') {
+                $('#progress').css('width', '100%');
+            } else if (data.status === 'downloading') {
+                $('#progress').css('width', data.progress);
+            }
+        });
+
+        socket.on('log', function(msg) {
+            $('#log').append(`<p>${msg}</p>`);
+        });
+    </script>
+</body>
+</html>
