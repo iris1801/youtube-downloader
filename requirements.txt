@@ -1,8 +1,11 @@
-Flask==2.2.5
-Flask-SocketIO==5.3.5
-yt-dlp==2023.7.6
+Flask==2.3.3
+flask-socketio==5.3.4
+yt-dlp==2024.03.04
+musicbrainzngs==0.7.1
+mutagen==1.46.0
+gevent==23.1.0
+gevent-websocket==0.10.1
 requests==2.31.0
 python-socketio==5.8.0
 eventlet==0.33.3
-musicbrainzngs==0.7.1
-mutagen==1.45.1
+
