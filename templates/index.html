@@ -29,6 +29,10 @@
             color: #cccccc;
             margin-top: 0;
         }
+        h3 {
+            color: #cccccc;
+            margin-top: 0;
+        }
         input[type="text"] {
             width: 80%;
             padding: 10px;
@@ -62,7 +66,7 @@
         <h1>Scarica Tracce da YouTube</h1>
         <h2>La musica scaricata da qui apparirà entro 15 minuti in Tripallefy (Plexamp)</h2>
         <h3>Una volta premuto su scarica, aspetta, l'operazione sta andando in background</h3>
-        <form action="/download" method="POST">
+        <form id="download-form">
             <input type="text" name="url" placeholder="Incolla qui l'url della canzone" required>
             <input type="submit" value="Scarica!">
         </form>
@@ -86,6 +90,24 @@
                 log.innerHTML += '<p>Download complete!</p>';
             }
             log.scrollTop = log.scrollHeight;
+        });
+
+        document.getElementById('download-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var url = this.url.value;
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/download', true);
+            xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.status === 'success') {
+                        var log = document.getElementById('log');
+                        log.innerHTML += '<p>Download request submitted successfully.</p>';
+                    }
+                }
+            };
+            xhr.send(JSON.stringify({ url: url }));
         });
     </script>
 </body>
