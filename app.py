@@ -9,6 +9,12 @@ app = Flask(__name__)
 socketio = SocketIO(app)
 download_directory = '/home/media'  # Change this to your desired download directory
 
+# Proxy settings
+#http_proxy = "http://proxy-server-address:port"
+#https_proxy = "http://proxy-server-address:port"
+#os.environ['HTTP_PROXY'] = http_proxy
+#os.environ['HTTPS_PROXY'] = https_proxy
+
 musicbrainzngs.set_useragent("YT-Downloader", "0.86", "matteo@tripalle.it")
 
 class MyLogger:
@@ -26,7 +32,7 @@ class MyLogger:
 
     def log(self, msg):
         self.msgs.append(msg)
-        socketio.emit('log', msg)
+        socketio.emit('log', {'msg': msg})
 
 def progress_hook(d):
     if d['status'] == 'finished':
@@ -38,11 +44,12 @@ def progress_hook(d):
 def fetch_metadata(title):
     try:
         result = musicbrainzngs.search_recordings(recording=title, limit=1)
-        recording = result['recording-list'][0]
-        artist = recording['artist-credit'][0]['artist']['name']
-        album = recording['release-list'][0]['title']
-        track_title = recording['title']
-        return {'artist': artist, 'album': album, 'title': track_title}
+        if result['recording-list']:
+            recording = result['recording-list'][0]
+            recording_id = recording['id']
+            return musicbrainzngs.get_recording_by_id(recording_id, includes=["artists", "releases"])
+        else:
+            return None
     except Exception as e:
         print(f"Error fetching metadata: {e}")
         return None
@@ -50,9 +57,11 @@ def fetch_metadata(title):
 def apply_metadata(file_path, metadata):
     try:
         audio = EasyID3(file_path)
-        audio['artist'] = metadata['artist']
-        audio['album'] = metadata['album']
-        audio['title'] = metadata['title']
+        if 'artist-credit' in metadata['recording']:
+            audio['artist'] = metadata['recording']['artist-credit'][0]['artist']['name']
+        if 'release-list' in metadata['recording']:
+            audio['album'] = metadata['recording']['release-list'][0]['title']
+        audio['title'] = metadata['recording']['title']
         audio.save()
     except Exception as e:
         print(f"Error applying metadata: {e}")
@@ -73,28 +82,4 @@ def download_audio(url):
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info_dict = ydl.extract_info(url, download=True)
         title = info_dict.get('title', None)
-        file_path = f"{download_directory}/{title}.mp3"
-        
-        if title:
-            metadata = fetch_metadata(title)
-            if metadata:
-                artist_directory = os.path.join(download_directory, metadata['artist'])
-                if not os.path.exists(artist_directory):
-                    os.makedirs(artist_directory)
-                
-                new_file_path = os.path.join(artist_directory, f"{title}.mp3")
-                os.rename(file_path, new_file_path)
-                apply_metadata(new_file_path, metadata)
-
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    return render_template('index.html')
-
-@app.route('/download', methods=['POST'])
-def download():
-    url = request.form['url']
-    download_audio(url)
-    return jsonify({'status': 'success'})
-
-if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5500, debug=True)
+        file_path = f
