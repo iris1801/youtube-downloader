@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+    <h2>Accedi</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <p>{{ form.email.label }} {{ form.email() }}</p>
+        <p>{{ form.password.label }} {{ form.password() }}</p>
+        <p>{{ form.submit() }}</p>
+    </form>
+    <a href="{{ url_for('register') }}">Non hai un account? Registrati</a>
+</body>
+</html>
+
